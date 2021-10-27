@@ -15,6 +15,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sb.Models", "lib\Sb.Models\Sb.Models.csproj", "{6F9AAB22-9673-4119-94CF-10F2CC47F252}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sb.Data", "lib\Sb.Data\Sb.Data.csproj", "{D909A384-009F-466C-A1FF-EE5296C48817}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sb.OAuth2", "lib\Sb.OAuth2\Sb.OAuth2.csproj", "{07175926-E2C7-40AD-836F-5C0832CEA483}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +35,10 @@ Global
 		{D909A384-009F-466C-A1FF-EE5296C48817}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D909A384-009F-466C-A1FF-EE5296C48817}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D909A384-009F-466C-A1FF-EE5296C48817}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07175926-E2C7-40AD-836F-5C0832CEA483}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07175926-E2C7-40AD-836F-5C0832CEA483}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07175926-E2C7-40AD-836F-5C0832CEA483}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07175926-E2C7-40AD-836F-5C0832CEA483}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -41,6 +46,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{6F9AAB22-9673-4119-94CF-10F2CC47F252} = {7BEB4C74-1D76-4E49-918E-94AEB2AF61F0}
 		{D909A384-009F-466C-A1FF-EE5296C48817} = {7BEB4C74-1D76-4E49-918E-94AEB2AF61F0}
+		{07175926-E2C7-40AD-836F-5C0832CEA483} = {7BEB4C74-1D76-4E49-918E-94AEB2AF61F0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DF967348-C094-4839-B147-66FBF189C4AB}
