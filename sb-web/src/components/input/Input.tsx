@@ -2,74 +2,120 @@ import React, { FunctionComponent } from 'react';
 
 import {
     InputGroup,
-    InputLeftAddon,
     Input as ChakraInput,
     InputRightElement,
     Tooltip,
     InputProps as ChakraInputProps,
     TextareaProps as ChakraTextareaProps,
+    Text,
     Textarea,
+    Spinner,
+    Box,
 } from '@chakra-ui/react';
 import { ErrorCircle } from 'util/Icons';
 
 import 'components/input/Input.scss';
 
 interface Props {
-    icon?: JSX.Element | null;
+    loading?: boolean;
     field?: any;
     error?: boolean;
     errorLabel?: string;
     errorIcon?: JSX.Element;
+    label?: string;
+    required?: boolean;
 }
 
 interface InputProps extends Props {
     props: ChakraInputProps;
 }
 
-export const Input: FunctionComponent<InputProps> = ({ icon, field, error, errorLabel, errorIcon, props }) => {
+export const Input: FunctionComponent<InputProps> = ({
+    label,
+    field,
+    error,
+    errorLabel,
+    errorIcon,
+    props,
+    loading,
+    required,
+}) => {
     return (
-        <InputGroup variant="brand" alignItems="center">
-            {icon && <InputLeftAddon>{icon}</InputLeftAddon>}
-            <ChakraInput {...field} {...props} className="sb-input" />
-            {error ? (
-                <Tooltip label={errorLabel}>
-                    <InputRightElement color="brand.error">{errorIcon}</InputRightElement>
-                </Tooltip>
-            ) : null}
-        </InputGroup>
+        <Box className="sb-input-wrapper">
+            {label && (
+                <Text fontSize="sm" fontWeight="semibold" className="sb-input-label">
+                    {label}
+                    {required && <span className="required">*</span>}
+                </Text>
+            )}
+            <InputGroup variant="brand" alignItems="center" className="sb-input">
+                <ChakraInput p="0" {...field} {...props} />
+                {loading && (
+                    <InputRightElement color="brand.error">
+                        <Spinner size="sm" color="brand.dark" />
+                    </InputRightElement>
+                )}
+                {error ? (
+                    <Tooltip label={errorLabel}>
+                        <InputRightElement color="brand.error">{errorIcon}</InputRightElement>
+                    </Tooltip>
+                ) : null}
+            </InputGroup>
+        </Box>
     );
 };
 
 Input.defaultProps = {
-    icon: null,
+    loading: false,
     field: {},
     error: false,
     errorLabel: '',
     errorIcon: <ErrorCircle />,
+    label: '',
+    required: false,
 };
 
 interface TextareaProps extends Props {
     props: ChakraTextareaProps;
 }
 
-export const TextArea: FunctionComponent<TextareaProps> = ({ icon, field, error, errorLabel, errorIcon, props }) => {
+export const TextArea: FunctionComponent<TextareaProps> = ({
+    label,
+    field,
+    error,
+    errorLabel,
+    errorIcon,
+    props,
+    required,
+}) => {
     return (
-        <InputGroup variant="brand">
-            {icon && <InputLeftAddon>{icon}</InputLeftAddon>}
-            <Textarea {...field} {...props} className="sb-input" />
-            {error ? (
-                <Tooltip label={errorLabel}>
-                    <InputRightElement color="brand.error">{errorIcon}</InputRightElement>
-                </Tooltip>
-            ) : null}
-        </InputGroup>
+        <Box className="sb-input-wrapper">
+            {label && (
+                <Text fontSize="sm" fontWeight="semibold" className="sb-input-label">
+                    {label}
+                    {required && <span className="required">*</span>}
+                </Text>
+            )}
+            <InputGroup variant="brand">
+                <Textarea px="0" {...field} {...props} className="sb-input" borderRadius="0" />
+                {error ? (
+                    <Tooltip label={errorLabel}>
+                        <InputRightElement color="brand.error" h="0">
+                            {errorIcon}
+                        </InputRightElement>
+                    </Tooltip>
+                ) : null}
+            </InputGroup>
+        </Box>
     );
 };
 
 TextArea.defaultProps = {
-    icon: null,
+    loading: false,
     field: {},
     error: false,
     errorLabel: '',
     errorIcon: <ErrorCircle />,
+    label: '',
+    required: false,
 };

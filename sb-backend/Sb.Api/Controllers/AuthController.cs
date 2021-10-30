@@ -1,89 +1,113 @@
 ﻿
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Facebook;
-using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
+using Sb.OAuth2;
+using Sb.Api.Models;
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Web;
+using Sb.Api.Services;
+using System.Linq;
 
 namespace Sb.Api.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
-    [ApiExplorerSettings(IgnoreApi = true)]
+    [ApiController]
+    [AllowAnonymous]
     public partial class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
+        private readonly IConfiguration _config;
+        private readonly OAuth2ClientFactory _clientFactory;
 
-        public AuthController(ILogger<AuthController> logger)
+        public AuthController(ILogger<AuthController> logger, IConfiguration config, OAuth2ClientFactory clientFactory)
         {
             _logger = logger;
+            _config = config;
+            _clientFactory = clientFactory;
         }
 
         [HttpGet("login")]
-        [AllowAnonymous]
-        public IActionResult Login(IdentityProvider provider)
+        public string Login(IdentityProvider provider, [FromQuery] string redirectUri)
         {
-            string scheme = provider == IdentityProvider.Google
-                ? GoogleDefaults.AuthenticationScheme
-                : FacebookDefaults.AuthenticationScheme;
-            var properties = new AuthenticationProperties
-            {
-                RedirectUri = Url.Action(nameof(Authorize))
-            };
-            return Challenge(properties, scheme);
+            return _clientFactory.GetClient(provider).GetAuthorizationEndpoint(redirectUri);
         }
 
-        [Route("authorize")]
-        public async Task<IActionResult> Authorize()
+
+
+        [HttpGet("authorize")]
+        public async Task<IActionResult> Authorize(IdentityProvider provider, [FromQuery] string code, [FromQuery] string redirectUri)
         {
-            var authResult = await HttpContext.AuthenticateAsync();
-            if (authResult.Succeeded)
+            try
             {
-                return Ok(new
+                OAuth2Client client = _clientFactory.GetClient(provider);
+                GenerateTokenResponse tokenResponse = await client.GenerateAccessTokensAsync(code, redirectUri);
+                AuthorizedUser user = await client.GetAuthorizedUserAsync(tokenResponse.AccessToken);
+                await SignInAsync(provider, tokenResponse, user);
+                return Ok(tokenResponse);
+            }
+            catch (OAuth2Exception e)
+            {
+                if (e.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    Token = new OAuthToken
-                    {
-                        AccessToken = authResult.Properties.GetTokenValue("access_token"),
-                        RefreshToken = authResult.Properties.GetTokenValue("refresh_token"),
-                        IssuedUtc = authResult.Properties.IssuedUtc,
-                        ExpiresUtc = authResult.Properties.ExpiresUtc
-                    },
-                    User = GetUserFromClaims(authResult.Principal.Claims)
+                    return Unauthorized();
+                }
+                return BadRequest(new
+                {
+                    provider,
+                    providerResponseCode = e.StatusCode,
+                    providerResponseContent = e.Content
                 });
             }
-            return Unauthorized();
         }
 
-        private User GetUserFromClaims(IEnumerable<Claim> claims)
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
         {
-            return new User
-            {
-                IdentityProviderId = double.Parse(claims.FirstOrDefault(c => c.Type.EndsWith("nameidentifier")).Value),
-                FirstName = claims.FirstOrDefault(c => c.Type.EndsWith("givenname")).Value,
-                LastName = claims.FirstOrDefault(c => c.Type.EndsWith("surname")).Value,
-                Email = claims.FirstOrDefault(c => c.Type.EndsWith("emailaddress")).Value
-            };
+            await HttpContext.SignOutAsync();
+            return Ok();
         }
 
+        private async Task SignInAsync(IdentityProvider provider, GenerateTokenResponse token, AuthorizedUser user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim("picture", user.GetProfilePicture()),
+                new Claim("provider", provider.ToString())
+            };
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var tokens = new List<AuthenticationToken>();
+            AddTokenIfValid(tokens, "accessToken", token.AccessToken);
+            AddTokenIfValid(tokens, "refreshToken", token.RefreshToken);
+            AddTokenIfValid(tokens, "idToken", token.IdToken);
+            AuthenticationProperties authProps = new()
+            {
+                ExpiresUtc = token.ExpiresIn.HasValue
+                    ? DateTimeOffset.UtcNow.AddSeconds(token.ExpiresIn.Value)
+                    : null,
+                AllowRefresh = true
+            };
+            authProps.StoreTokens(tokens);
 
-        [Route("unauthorized")]
-        [AllowAnonymous]
-        public IActionResult NotAuthorized() => Unauthorized();
-    }
+            await HttpContext.SignInAsync(new ClaimsPrincipal(claimsIdentity), authProps);
+        }
 
-    public class User
-    {
-        public int Id { get; set; }
-        public double IdentityProviderId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
+        private void AddTokenIfValid(IEnumerable<AuthenticationToken> tokens, string name, string token)
+        {
+            if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(token))
+            {
+                tokens.Append(new AuthenticationToken { Name = name, Value = token });
+            }
+        }
     }
 }
