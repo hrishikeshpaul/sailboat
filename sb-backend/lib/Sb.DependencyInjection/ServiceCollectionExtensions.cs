@@ -1,5 +1,7 @@
 ﻿namespace Microsoft.Extensions.DependencyInjection;
 
+using Microsoft.Extensions.Configuration;
+
 using Sb.DependencyInjection;
 
 public static class ServiceCollectionExtensions
@@ -19,6 +21,10 @@ public static class ServiceCollectionExtensions
                 .AddClasses(@class => @class
                     .WithAttribute<ScopedServiceAttribute>())
                         .AsSelfWithInterfaces()
-                        .WithScopedLifetime());
+                        .WithScopedLifetime()
+                .AddClasses(@class => @class
+                    .WithAttribute<ConfigurationAttribute>())
+                        .AsSelf()
+                        .WithSingletonLifetime());
     }
 }
