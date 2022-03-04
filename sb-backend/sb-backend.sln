@@ -20,7 +20,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sb.Email", "lib\Sb.Email\Sb
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sb.HttpClients", "lib\Sb.HttpClients\Sb.HttpClients.csproj", "{277C71BF-DD68-4CF4-830A-B0A3F3445AE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sb.Widgets", "lib\Sb.Widgets\Sb.Widgets.csproj", "{66257528-283B-4901-B9DE-8C7FE0A01279}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sb.Widgets", "lib\Sb.Widgets\Sb.Widgets.csproj", "{66257528-283B-4901-B9DE-8C7FE0A01279}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sb.Widgets.Mongo", "lib\Sb.Widgets.Mongo\Sb.Widgets.Mongo.csproj", "{F6FC1F0B-8BAF-4730-B646-9F838F826A2F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -52,6 +54,10 @@ Global
 		{66257528-283B-4901-B9DE-8C7FE0A01279}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66257528-283B-4901-B9DE-8C7FE0A01279}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66257528-283B-4901-B9DE-8C7FE0A01279}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6FC1F0B-8BAF-4730-B646-9F838F826A2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6FC1F0B-8BAF-4730-B646-9F838F826A2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6FC1F0B-8BAF-4730-B646-9F838F826A2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6FC1F0B-8BAF-4730-B646-9F838F826A2F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -62,6 +68,7 @@ Global
 		{30D028A5-9CF5-41F0-BD53-368326835BEB} = {7BEB4C74-1D76-4E49-918E-94AEB2AF61F0}
 		{277C71BF-DD68-4CF4-830A-B0A3F3445AE3} = {7BEB4C74-1D76-4E49-918E-94AEB2AF61F0}
 		{66257528-283B-4901-B9DE-8C7FE0A01279} = {7BEB4C74-1D76-4E49-918E-94AEB2AF61F0}
+		{F6FC1F0B-8BAF-4730-B646-9F838F826A2F} = {7BEB4C74-1D76-4E49-918E-94AEB2AF61F0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DF967348-C094-4839-B147-66FBF189C4AB}

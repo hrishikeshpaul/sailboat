@@ -3,6 +3,7 @@
     public interface IWidget
     {
         public string Id { get; set; }
+        public string BoatId { get; set; }
     }
 
     public interface ICanComment
@@ -10,7 +11,7 @@
         public IEnumerable<Comment> Comments { get; set; }
     }
 
-    public interface ITimeSpanWidget : IWidget
+    public interface ITimeSpanWidget
     {
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
@@ -22,14 +23,7 @@
         public Address Destination { get; set; }
     }
 
-
-    public class AnchorWidget : IWidget
-    {
-        public string Id { get; set; } = string.Empty;
-        public IEnumerable<IWidget> Children { get; set; } = Enumerable.Empty<IWidget>();
-    }
-
-    public class DateWidget : AnchorWidget
+    public interface IDateWidget
     {
         public DateOnly Date { get; set; }
     }
@@ -50,10 +44,12 @@
         public string CountryCode { get; set; } = string.Empty;
     }
 
-    public class BoardingWidget : ITimeSpanWidget
+    public class BoardingWidget : IWidget, ITimeSpanWidget, ICanComment
     {
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
         public string Id { get; set; } = string.Empty;
+        public string BoatId  { get; set; } = string.Empty;
+        public IEnumerable<Comment> Comments { get; set; } = Enumerable.Empty<Comment>();
     }
 }

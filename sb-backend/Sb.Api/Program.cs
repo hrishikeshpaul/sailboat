@@ -6,13 +6,16 @@ using Microsoft.IdentityModel.Tokens;
 
 using Newtonsoft.Json.Converters;
 
+using Sb.Api;
+using Sb.Api.GraphQL;
 using Sb.Api.Authorization;
 using Sb.Api.Configuration;
 using Sb.Api.Middleware;
 using Sb.Api.Services;
 using Sb.Email;
 using Sb.OAuth2;
-using Sb.Api;
+using Sb.Widgets.Mongo;
+using Sb.Widgets;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 IServiceCollection services = builder.Services;
@@ -31,6 +34,7 @@ services
     .AddTransient<EmailService>()
     .AddTransient<ITokenService,TokenService>()
     .AddTransient<ValidateAccessTokenMiddleware>()
+    .AddSingleton<IWidget,IMongoWidget>()
     .AddAuthorization(opts =>
     {
         opts.AddPolicy(AuthorizationPolicies.ReadBoatPolicy, policy =>
@@ -100,8 +104,8 @@ services.AddControllers()
 var graphBuilder = services
     .AddGraphQLServer()
     .AddAuthorization()
-    .AddQueryType<Query>()
-    .AddMutationType<Mutation>()
+    .AddQueryType<GqlQueries>()
+    .AddMutationType<GqlMutations>()
     .AddFiltering()
     .AddProjections()
     .AddSorting();

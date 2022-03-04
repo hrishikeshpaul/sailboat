@@ -8,6 +8,7 @@ using Sb.Api.Models;
 using Sb.Api.Services;
 using Sb.Data;
 using Sb.Data.Models.Mongo;
+using Sb.Widgets;
 
 namespace Sb.Api.Controllers
 {
@@ -157,5 +158,49 @@ namespace Sb.Api.Controllers
             await _boatService.DeleteCrewMember(boatId, userId);
             return Ok();
         }
+
+        [HttpGet("{boatId}/widgets")]
+        public async Task<IActionResult> GetWidgets(string boatId, [FromServices] IRepository<IWidget> widgetRepo)
+        {
+            Boat b = await _boatService.GetBoatById(boatId);
+            return Ok(await widgetRepo.GetAsync(w => w.BoatId == b.Id));
+        }
+
+        [HttpPut("{boatId}/widgets")]
+        public async Task<IActionResult> UpdateWidget(
+            string boatId,
+            [FromBody] IWidget widget,
+            [FromServices] IRepository<IWidget> widgetRepo)
+        {
+            Boat b = await _boatService.GetBoatById(boatId);
+
+            if (string.IsNullOrWhiteSpace(widget.Id))
+            {
+                widget.BoatId = b.Id;
+                return Ok(await widgetRepo.InsertAsync(widget));
+            }
+
+            await widgetRepo.UpdateAsync(widget);
+            return Ok(widget);
+        }
+
+        [HttpDelete("{boatId}/widgets/{widgetId}")]
+        public async Task<IActionResult> DeleteWidget(
+            string boatId,
+            string widgetId,
+            [FromServices] IRepository<IWidget> widgetRepo)
+        {
+            Guard.Against.NullOrWhiteSpace(widgetId, nameof(widgetId));
+            await _boatService.GetBoatById(boatId);
+            IWidget widget = await widgetRepo.GetByIdAsync(widgetId);
+            if (widget != null)
+                await widgetRepo.DeleteAsync(widget);
+            return Ok();
+        }
+    }
+
+    static class WidgetExtensions
+    {
+        static TWidget ConvertToWidget<TWidget>()
     }
 }
