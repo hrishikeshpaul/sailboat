@@ -1,5 +1,3 @@
-using System.Text;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +10,8 @@ using Sb.Api.Middleware;
 using Sb.Api.Services;
 using Sb.Email;
 using Sb.OAuth2;
+
+using System.Text;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 IServiceCollection services = builder.Services;
@@ -28,9 +28,9 @@ services
     .AddSingleton<OAuth2ClientFactory>()
     .AddTransient<BoatService>()
     .AddTransient<EmailService>()
-    .AddTransient<ITokenService,TokenService>()
+    .AddTransient<ITokenService, TokenService>()
     .AddTransient<ValidateAccessTokenMiddleware>()
-    .AddTransient<IUserService,UserService>()
+    .AddTransient<IUserService, UserService>()
     .AddAuthorization(opts =>
     {
         opts.AddPolicy(AuthorizationPolicies.ReadBoatPolicy, policy =>

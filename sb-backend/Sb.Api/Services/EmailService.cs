@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-using System.Xml.Linq;
-
+﻿
 using Ardalis.GuardClauses;
 
 using Microsoft.AspNetCore.Authorization;
@@ -64,6 +62,21 @@ namespace Sb.Api.Services
             {
                 await SendInvitationAsync(invite, boat);
             }
+        }
+
+        public async Task SendEmailConfirmationAsync(string email, string baseUrl, Guid token)
+        {
+            Guard.Against.NullOrWhiteSpace(email, nameof(email));
+            Guard.Against.NullOrWhiteSpace(baseUrl, nameof(baseUrl));
+
+            string url = $"{baseUrl.TrimEnd(' ', '/')}/email-confirmation?token={token}";
+            await _emailClient.SendEmailAsync(new EmailMessage
+            {
+                From = new Address(_emailConfig.From, _emailConfig.Name),
+                To = new List<Address> { new Address(email) },
+                Subject = "Confirm your email address",
+                Body = $"Please confirm your email address by clicking <a href=\"{url}\">here</a>"
+            });
         }
 
         private async Task SendInvitationAsync(Invite invite, Boat boat)

@@ -1,13 +1,6 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-
-using Newtonsoft.Json;
 
 using Sb.Api.Configuration;
 using Sb.Api.Models;
@@ -16,13 +9,10 @@ using Sb.Data;
 using Sb.Data.Models;
 using Sb.OAuth2;
 
+using System.Security.Claims;
+
 namespace Sb.Api.Controllers
 {
-    public class EmailPasswordLogin
-    {
-        public string Email { get; set; }
-        public string Password { get; set; }
-    }
     public class AuthController : ApiControllerBase
     {
         private readonly OAuth2ClientFactory _clientFactory;
@@ -56,9 +46,10 @@ namespace Sb.Api.Controllers
             [FromServices] IUserService userService,
             CreateUser user)
         {
-            return Ok(await userService.CreateUserAsync(user));
+            user.EmailConfirmationToken = Guid.NewGuid();
+            JwtTokensResponse tokens = await userService.CreateUserAsync(user);
+            return Ok(tokens);
         }
-
 
         [HttpGet("authorize")]
         [AllowAnonymous]
@@ -70,51 +61,36 @@ namespace Sb.Api.Controllers
             [FromServices] IRepository<User> userRepository,
             [FromServices] ITokenService tokenService)
         {
-            try
+            OAuth2Client client = _clientFactory.GetClient(provider);
+            OAuthTokens providerTokens = await client.GenerateAccessTokensAsync(code, redirectUri, state);
+            AuthorizedUser user = await client.GetAuthorizedUserAsync(providerTokens.AccessToken);
+
+            if (string.IsNullOrWhiteSpace(user.Email))
+                return BadRequest("Invalid email");
+
+            User existingUser = await userRepository
+                .FirstOrDefaultAsync(u => u.ConnectedAccounts.Any(ca => ca.Id == user.Id));
+
+            if (existingUser is null)
             {
-                OAuth2Client client = _clientFactory.GetClient(provider);
-                OAuthTokens providerTokens = await client.GenerateAccessTokensAsync(code, redirectUri, state);
-                AuthorizedUser user = await client.GetAuthorizedUserAsync(providerTokens.AccessToken);
-
-                if (string.IsNullOrWhiteSpace(user.Email))
-                    return BadRequest("Invalid email");
-
-                User existingUser = await userRepository.FirstOrDefaultAsync(u => u.Email == user.Email);
-                if (existingUser is null)
+                existingUser = await userRepository.InsertAsync(new User
                 {
-                    existingUser = await userRepository.InsertAsync(new User
-                    {
-                        Name = user.Name,
-                        Email = user.Email,
-                        Provider = provider.ToString(),
-                        ProviderUserId = user.Id,
-                        DateCreated = DateTime.UtcNow
-                    });
-                }
-
-                IEnumerable<Claim> claims = GenerateUserClaims(existingUser);
-                TokenBase accessToken = await tokenService.GenerateToken(existingUser.Id, TokenType.Access, claims);
-                TokenBase refreshToken = await tokenService.GenerateToken(existingUser.Id, TokenType.Refresh, claims);
-                return Ok(new JwtTokensResponse
-                {
-                    AccessToken = accessToken,
-                    RefreshToken = refreshToken
+                    Name = user.Name,
+                    Email = user.Email,
+                    DateCreated = DateTime.UtcNow,
+                    ConnectedAccounts = new List<ConnectedAccount>
+                        {
+                            new ConnectedAccount
+                            {
+                                Id = user.Id,
+                                Provider = provider.ToString(),
+                                PictureUrl = user.GetProfilePicture()
+                            }
+                        }
                 });
             }
-            catch (OAuth2Exception e)
-            {
-                Console.WriteLine(e.Content);
-                if (e.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    return Unauthorized();
-                }
-                return BadRequest(new
-                {
-                    provider,
-                    providerResponseCode = e.StatusCode,
-                    providerResponseContent = e.Content
-                });
-            }
+
+            return Ok(await tokenService.GenerateTokens(existingUser.Id, GenerateUserClaims(existingUser)));
         }
 
         [HttpPost("refresh")]

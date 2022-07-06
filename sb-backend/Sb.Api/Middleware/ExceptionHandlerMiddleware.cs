@@ -1,8 +1,6 @@
-﻿using System.Net;
+﻿using Sb.Api.Validation;
 
-using Newtonsoft.Json;
-
-using Sb.Api.Validation;
+using System.Net;
 
 namespace Sb.Api.Middleware
 {
@@ -28,7 +26,6 @@ namespace Sb.Api.Middleware
                 _logger.LogError(error, error.Message);
                 HttpResponse response = context.Response;
                 response.ContentType = "application/json";
-                string result;
 
                 switch (error)
                 {

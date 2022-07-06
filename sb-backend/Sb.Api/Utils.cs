@@ -1,9 +1,8 @@
-﻿using System.Security.Claims;
+﻿using Newtonsoft.Json;
 
-using Newtonsoft.Json;
-
-using Sb.Api.Models;
 using Sb.OAuth2;
+
+using System.Security.Claims;
 
 namespace Sb.Api
 {

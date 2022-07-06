@@ -1,6 +1,6 @@
-﻿using System.Security.Claims;
+﻿using Sb.Data.Models;
 
-using Sb.Data.Models;
+using System.Security.Claims;
 
 namespace Sb.Api.Authorization
 {

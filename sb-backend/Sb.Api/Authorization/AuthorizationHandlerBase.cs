@@ -1,8 +1,8 @@
-﻿using System.Security.Claims;
-
-using Ardalis.GuardClauses;
+﻿using Ardalis.GuardClauses;
 
 using Microsoft.AspNetCore.Authorization;
+
+using System.Security.Claims;
 
 namespace Sb.Api.Authorization
 {

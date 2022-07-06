@@ -1,15 +1,14 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-
-using Ardalis.GuardClauses;
-
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 using Sb.Api.Configuration;
+using Sb.Api.Models;
 using Sb.Data;
 using Sb.Data.Models;
+
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Sb.Api.Services
 {
@@ -17,6 +16,7 @@ namespace Sb.Api.Services
     {
         Task<bool> IsTokenValid(string userId, string token, TokenType tokenType);
         Task<TokenBase> GenerateToken(string userId, TokenType tokenType, IEnumerable<Claim> claims);
+        Task<JwtTokensResponse> GenerateTokens(string userId, IEnumerable<Claim> claims);
         Task RevokeToken(string userId, string token, TokenType tokenType);
         Task RevokeAllTokens(string userId);
     }
@@ -60,6 +60,18 @@ namespace Sb.Api.Services
             });
         }
 
+        public async Task<JwtTokensResponse> GenerateTokens(string userId, IEnumerable<Claim> claims)
+        {
+            TokenBase[] tokens = await Task.WhenAll(
+                GenerateToken(userId, TokenType.Access, claims),
+                GenerateToken(userId, TokenType.Refresh, claims));
+
+            return new JwtTokensResponse
+            {
+                AccessToken = tokens[0],
+                RefreshToken = tokens[1]
+            };
+        }
 
         public async Task<bool> IsTokenValid(string userId, string token, TokenType tokenType)
         {
@@ -79,7 +91,7 @@ namespace Sb.Api.Services
         public async Task RevokeAllTokens(string userId)
         {
             IEnumerable<TokenBase> tokens = await _tokenRepo.GetAsync(t => t.UserId == userId);
-            foreach(var token in tokens)
+            foreach (var token in tokens)
             {
                 await _tokenRepo.DeleteAsync(token);
             }

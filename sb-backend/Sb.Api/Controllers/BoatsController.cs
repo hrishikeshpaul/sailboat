@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-
-using Ardalis.GuardClauses;
+﻿using Ardalis.GuardClauses;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +6,8 @@ using Sb.Api.Models;
 using Sb.Api.Services;
 using Sb.Data;
 using Sb.Data.Models;
+
+using System.Security.Claims;
 
 namespace Sb.Api.Controllers
 {

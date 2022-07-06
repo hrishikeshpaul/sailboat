@@ -1,11 +1,11 @@
-﻿using System.Security.Claims;
-
-using Ardalis.GuardClauses;
+﻿using Ardalis.GuardClauses;
 
 using Sb.Api.Models;
 using Sb.Api.Validation;
 using Sb.Data;
 using Sb.Data.Models;
+
+using System.Security.Claims;
 
 namespace Sb.Api.Services
 {
